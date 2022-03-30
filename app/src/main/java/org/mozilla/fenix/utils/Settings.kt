@@ -258,20 +258,11 @@ class Settings(private val appContext: Context) : PreferencesHolder {
         default = false
     )
 
-    val isTelemetryEnabled by booleanPreference(
-        appContext.getPreferenceKey(R.string.pref_key_telemetry),
-        default = false
-    )
+    val isTelemetryEnabled = false
 
-    val isMarketingTelemetryEnabled by booleanPreference(
-        appContext.getPreferenceKey(R.string.pref_key_marketing_telemetry),
-        default = false
-    )
+    val isMarketingTelemetryEnabled = false
 
-    var isExperimentationEnabled by booleanPreference(
-        appContext.getPreferenceKey(R.string.pref_key_experimentation),
-        default = true
-    )
+    var isExperimentationEnabled = false
 
     var isOverrideTPPopupsForPerformanceTest = false
 
