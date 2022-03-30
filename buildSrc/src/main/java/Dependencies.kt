@@ -43,19 +43,12 @@ object Versions {
 
     const val mozilla_android_components = AndroidComponents.VERSION
 
-    const val adjust = "4.18.3"
-    const val installreferrer = "1.0"
-
     const val junit = "5.5.2"
     const val mockk = "1.12.0"
 
     const val mockwebserver = "4.9.0"
     const val uiautomator = "2.2.0"
     const val robolectric = "4.6.1"
-
-    const val google_ads_id_version = "16.0.0"
-
-    const val google_play_store_version = "1.8.0"
 
     const val protobuf = "3.11.4" // keep in sync with the version used in AS.
 }
@@ -212,9 +205,6 @@ object Deps {
     const val protobuf_javalite = "com.google.protobuf:protobuf-javalite:${Versions.protobuf}"
     const val protobuf_compiler = "com.google.protobuf:protoc:${Versions.protobuf}"
 
-    const val adjust = "com.adjust.sdk:adjust-android:${Versions.adjust}"
-    const val installreferrer = "com.android.installreferrer:installreferrer:${Versions.installreferrer}"
-
     const val jna = "net.java.dev.jna:jna:${Versions.jna}@jar"
 
     const val junit = "junit:junit:${Versions.junit}"
@@ -245,11 +235,6 @@ object Deps {
     const val mockwebserver = "com.squareup.okhttp3:mockwebserver:${Versions.mockwebserver}"
     const val uiautomator = "androidx.test.uiautomator:uiautomator:${Versions.uiautomator}"
     const val robolectric = "org.robolectric:robolectric:${Versions.robolectric}"
-
-    const val google_ads_id = "com.google.android.gms:play-services-ads-identifier:${Versions.google_ads_id_version}"
-
-    // Required for in-app reviews
-    const val google_play_store = "com.google.android.play:core:${Versions.google_play_store_version}"
 
     const val detektApi = "io.gitlab.arturbosch.detekt:detekt-api:${Versions.detekt}"
     const val detektTest = "io.gitlab.arturbosch.detekt:detekt-test:${Versions.detekt}"

@@ -13,7 +13,6 @@ import kotlinx.coroutines.launch
 import mozilla.components.support.base.log.logger.Logger
 import org.mozilla.fenix.GleanMetrics.Activation
 import org.mozilla.fenix.GleanMetrics.Pings
-import org.mozilla.fenix.components.metrics.MetricsUtils.getHashedIdentifier
 
 class ActivationPing(private val context: Context) {
     companion object {
@@ -64,14 +63,7 @@ class ActivationPing(private val context: Context) {
         Activation.activationId.generateAndSet()
 
         CoroutineScope(Dispatchers.IO).launch {
-            val hashedId = getHashedIdentifier(context)
-            if (hashedId != null) {
-                Logger.info("ActivationPing - generating ping with the hashed id")
-                // We have a valid, hashed Google Advertising ID.
-                Activation.identifier.set(hashedId)
-            }
-
-            Logger.info("ActivationPing - generating ping (has `identifier`: ${hashedId != null})")
+            Logger.info("ActivationPing - generating ping (has `identifier`: false)")
             Pings.activation.submit()
             markAsTriggered()
         }

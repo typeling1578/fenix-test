@@ -20,7 +20,6 @@ import org.mozilla.fenix.Config
 import org.mozilla.fenix.HomeActivity
 import org.mozilla.fenix.R
 import org.mozilla.fenix.ReleaseChannel
-import org.mozilla.fenix.components.metrics.AdjustMetricsService
 import org.mozilla.fenix.components.metrics.GleanMetricsService
 import org.mozilla.fenix.components.metrics.MetricController
 import org.mozilla.fenix.experiments.createNimbus
@@ -102,8 +101,7 @@ class Analytics(
     val metrics: MetricController by lazyMonitored {
         MetricController.create(
             listOf(
-                GleanMetricsService(context),
-                AdjustMetricsService(context as Application)
+                GleanMetricsService(context)
             ),
             isDataTelemetryEnabled = { context.settings().isTelemetryEnabled },
             isMarketingDataTelemetryEnabled = { context.settings().isMarketingTelemetryEnabled },
