@@ -4,6 +4,7 @@
 
 package org.mozilla.fenix.home.sessioncontrol
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.widget.EditText
 import androidx.annotation.VisibleForTesting
@@ -28,6 +29,8 @@ import mozilla.components.support.ktx.android.view.showKeyboard
 import mozilla.components.support.ktx.kotlin.isUrl
 import org.mozilla.fenix.BrowserDirection
 import org.mozilla.fenix.FeatureFlags
+import org.mozilla.fenix.GleanMetrics.Pings
+import org.mozilla.fenix.GleanMetrics.TopSites
 import org.mozilla.fenix.HomeActivity
 import org.mozilla.fenix.R
 import org.mozilla.fenix.browser.BrowserFragmentDirections
@@ -118,7 +121,7 @@ interface SessionControlController {
     /**
      * @see [TopSiteInteractor.onSelectTopSite]
      */
-    fun handleSelectTopSite(topSite: TopSite)
+    fun handleSelectTopSite(topSite: TopSite, position: Int)
 
     /**
      * @see [TopSiteInteractor.onSettingsClicked]
@@ -307,7 +310,13 @@ class DefaultSessionControlController(
     }
 
     override fun handleOpenInPrivateTabClicked(topSite: TopSite) {
-        metrics.track(Event.TopSiteOpenInPrivateTab)
+        metrics.track(
+            if (topSite is TopSite.Provided) {
+                Event.TopSiteOpenContileInPrivateTab
+            } else {
+                Event.TopSiteOpenInPrivateTab
+            }
+        )
         with(activity) {
             browsingModeManager.mode = BrowsingMode.Private
             openToBrowserAndLoad(
@@ -327,6 +336,7 @@ class DefaultSessionControlController(
         )
     }
 
+    @SuppressLint("InflateParams")
     override fun handleRenameTopSiteClicked(topSite: TopSite) {
         activity.let {
             val customLayout =
@@ -383,16 +393,21 @@ class DefaultSessionControlController(
         metrics.track(Event.CollectionRenamePressed)
     }
 
-    override fun handleSelectTopSite(topSite: TopSite) {
+    override fun handleSelectTopSite(topSite: TopSite, position: Int) {
         dismissSearchDialogIfDisplayed()
 
         metrics.track(Event.TopSiteOpenInNewTab)
 
-        when (topSite) {
-            is TopSite.Default -> metrics.track(Event.TopSiteOpenDefault)
-            is TopSite.Frecent -> metrics.track(Event.TopSiteOpenFrecent)
-            is TopSite.Pinned -> metrics.track(Event.TopSiteOpenPinned)
-        }
+        metrics.track(
+            when (topSite) {
+                is TopSite.Default -> Event.TopSiteOpenDefault
+                is TopSite.Frecent -> Event.TopSiteOpenFrecent
+                is TopSite.Pinned -> Event.TopSiteOpenPinned
+                is TopSite.Provided -> Event.TopSiteOpenProvided.also {
+                    submitTopSitesImpressionPing(topSite, position)
+                }
+            }
+        )
 
         when (topSite.url) {
             SupportUtils.GOOGLE_URL -> metrics.track(Event.TopSiteOpenGoogle)
@@ -424,7 +439,23 @@ class DefaultSessionControlController(
         activity.openToBrowser(BrowserDirection.FromHome)
     }
 
+    @VisibleForTesting
+    internal fun submitTopSitesImpressionPing(topSite: TopSite.Provided, position: Int) {
+        metrics.track(
+            Event.TopSiteContileClick(
+                position = position + 1,
+                source = Event.TopSiteContileClick.Source.NEWTAB
+            )
+        )
+
+        topSite.id?.let { TopSites.contileTileId.set(it) }
+        topSite.title?.let { TopSites.contileAdvertiser.set(it.lowercase()) }
+        TopSites.contileReportingUrl.set(topSite.clickUrl)
+        Pings.topsitesImpression.submit()
+    }
+
     override fun handleTopSiteSettingsClicked() {
+        metrics.track(Event.TopSiteContileSettings)
         navController.nav(
             R.id.homeFragment,
             HomeFragmentDirections.actionGlobalHomeSettingsFragment()
@@ -432,6 +463,7 @@ class DefaultSessionControlController(
     }
 
     override fun handleSponsorPrivacyClicked() {
+        metrics.track(Event.TopSiteContilePrivacy)
         activity.openToBrowserAndLoad(
             searchTermOrURL = SupportUtils.getGenericSumoURLForTopic(SupportUtils.SumoTopic.SPONSOR_PRIVACY),
             newTab = true,

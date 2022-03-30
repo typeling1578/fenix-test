@@ -21,6 +21,8 @@ import org.mozilla.fenix.components.tips.Tip
 import org.mozilla.fenix.home.BottomSpacerViewHolder
 import org.mozilla.fenix.home.HomeFragmentStore
 import org.mozilla.fenix.home.TopPlaceholderViewHolder
+import org.mozilla.fenix.home.pocket.PocketCategoriesViewHolder
+import org.mozilla.fenix.home.pocket.PocketRecommendationsHeaderViewHolder
 import org.mozilla.fenix.home.pocket.PocketStoriesViewHolder
 import org.mozilla.fenix.home.recentbookmarks.view.RecentBookmarksHeaderViewHolder
 import org.mozilla.fenix.home.recentbookmarks.view.RecentBookmarksViewHolder
@@ -82,11 +84,13 @@ sealed class AdapterItem(@LayoutRes val viewType: Int) {
          *
          * See https://github.com/mozilla-mobile/fenix/pull/20189#issuecomment-877124730
          */
+        @Suppress("ComplexCondition")
         override fun getChangePayload(newItem: AdapterItem): Any? {
             val newTopSites = (newItem as? TopSitePager)
             val oldTopSites = (this as? TopSitePager)
 
             if (newTopSites == null || oldTopSites == null ||
+                newTopSites.topSites.size > oldTopSites.topSites.size ||
                 (newTopSites.topSites.size > TopSitePagerViewHolder.TOP_SITES_PER_PAGE)
                 != (oldTopSites.topSites.size > TopSitePagerViewHolder.TOP_SITES_PER_PAGE)
             ) {
@@ -165,8 +169,9 @@ sealed class AdapterItem(@LayoutRes val viewType: Int) {
     object RecentBookmarksHeader : AdapterItem(RecentBookmarksHeaderViewHolder.LAYOUT_ID)
     object RecentBookmarks : AdapterItem(RecentBookmarksViewHolder.LAYOUT_ID)
 
-    object PocketStoriesItem :
-        AdapterItem(PocketStoriesViewHolder.LAYOUT_ID)
+    object PocketStoriesItem : AdapterItem(PocketStoriesViewHolder.LAYOUT_ID)
+    object PocketCategoriesItem : AdapterItem(PocketCategoriesViewHolder.LAYOUT_ID)
+    object PocketRecommendationsFooterItem : AdapterItem(PocketRecommendationsHeaderViewHolder.LAYOUT_ID)
 
     object BottomSpacer : AdapterItem(BottomSpacerViewHolder.LAYOUT_ID)
 
@@ -215,8 +220,19 @@ class SessionControlAdapter(
             )
             PocketStoriesViewHolder.LAYOUT_ID -> return PocketStoriesViewHolder(
                 composeView = ComposeView(parent.context),
-                viewLifecycleOwner,
+                viewLifecycleOwner = viewLifecycleOwner,
                 store = store,
+                interactor = interactor
+            )
+            PocketCategoriesViewHolder.LAYOUT_ID -> return PocketCategoriesViewHolder(
+                composeView = ComposeView(parent.context),
+                viewLifecycleOwner = viewLifecycleOwner,
+                store = store,
+                interactor = interactor
+            )
+            PocketRecommendationsHeaderViewHolder.LAYOUT_ID -> return PocketRecommendationsHeaderViewHolder(
+                composeView = ComposeView(parent.context),
+                viewLifecycleOwner = viewLifecycleOwner,
                 interactor = interactor
             )
             RecentBookmarksViewHolder.LAYOUT_ID -> return RecentBookmarksViewHolder(
@@ -245,7 +261,7 @@ class SessionControlAdapter(
         return when (viewType) {
             TopPlaceholderViewHolder.LAYOUT_ID -> TopPlaceholderViewHolder(view)
             ButtonTipViewHolder.LAYOUT_ID -> ButtonTipViewHolder(view, interactor)
-            TopSitePagerViewHolder.LAYOUT_ID -> TopSitePagerViewHolder(view, interactor)
+            TopSitePagerViewHolder.LAYOUT_ID -> TopSitePagerViewHolder(view, viewLifecycleOwner, interactor)
             PrivateBrowsingDescriptionViewHolder.LAYOUT_ID -> PrivateBrowsingDescriptionViewHolder(
                 view,
                 interactor
@@ -296,6 +312,8 @@ class SessionControlAdapter(
             is RecentlyVisitedViewHolder,
             is RecentBookmarksViewHolder,
             is RecentTabViewHolder,
+            is PocketCategoriesViewHolder,
+            is PocketRecommendationsHeaderViewHolder,
             is PocketStoriesViewHolder -> {
                 // no op
                 // This previously called "composeView.disposeComposition" which would have the
