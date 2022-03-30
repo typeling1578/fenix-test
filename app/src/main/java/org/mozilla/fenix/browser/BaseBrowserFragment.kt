@@ -130,8 +130,10 @@ import mozilla.components.feature.webauthn.WebAuthnFeature
 import mozilla.components.support.base.feature.ActivityResultHandler
 import mozilla.components.support.ktx.android.view.enterToImmersiveMode
 import mozilla.components.support.ktx.kotlin.getOrigin
+import org.mozilla.fenix.GleanMetrics.Downloads
 import org.mozilla.fenix.components.toolbar.interactor.BrowserToolbarInteractor
 import org.mozilla.fenix.components.toolbar.interactor.DefaultBrowserToolbarInteractor
+import org.mozilla.fenix.crashes.CrashContentIntegration
 import org.mozilla.fenix.databinding.FragmentBrowserBinding
 import org.mozilla.fenix.ext.secure
 import org.mozilla.fenix.perf.MarkersFragmentLifecycleCallbacks
@@ -191,6 +193,7 @@ abstract class BaseBrowserFragment :
     private val searchFeature = ViewBoundFeatureWrapper<SearchFeature>()
     private val webAuthnFeature = ViewBoundFeatureWrapper<WebAuthnFeature>()
     private val biometricPromptFeature = ViewBoundFeatureWrapper<BiometricPromptFeature>()
+    private val crashContentIntegration = ViewBoundFeatureWrapper<CrashContentIntegration>()
     private var pipFeature: PictureInPictureFeature? = null
 
     var customTabSessionId: String? = null
@@ -515,6 +518,10 @@ abstract class BaseBrowserFragment :
 
                 dynamicDownloadDialog.show()
                 browserToolbarView.expand()
+
+                if (downloadState.contentType == "application/pdf") {
+                    Downloads.pdfDownloadCount.add()
+                }
             }
         }
 
@@ -632,6 +639,22 @@ abstract class BaseBrowserFragment :
                 requireComponents.useCases.sessionUseCases.goBack,
                 binding.engineView,
                 customTabSessionId
+            ),
+            owner = this,
+            view = view
+        )
+
+        crashContentIntegration.set(
+            feature = CrashContentIntegration(
+                browserStore = requireComponents.core.store,
+                appStore = requireComponents.appStore,
+                toolbar = browserToolbarView.view,
+                isToolbarPlacedAtTop = !context.settings().shouldUseBottomToolbar,
+                crashReporterView = binding.crashReporterView,
+                components = requireComponents,
+                settings = context.settings(),
+                navController = findNavController(),
+                sessionId = customTabSessionId
             ),
             owner = this,
             view = view

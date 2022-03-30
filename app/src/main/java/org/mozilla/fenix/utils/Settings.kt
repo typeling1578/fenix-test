@@ -18,12 +18,14 @@ import androidx.lifecycle.LifecycleOwner
 import mozilla.components.feature.sitepermissions.SitePermissionsRules
 import mozilla.components.feature.sitepermissions.SitePermissionsRules.Action
 import mozilla.components.feature.sitepermissions.SitePermissionsRules.AutoplayAction
+import mozilla.components.service.contile.ContileTopSitesProvider
 import mozilla.components.support.ktx.android.content.PreferencesHolder
 import mozilla.components.support.ktx.android.content.booleanPreference
 import mozilla.components.support.ktx.android.content.floatPreference
 import mozilla.components.support.ktx.android.content.intPreference
 import mozilla.components.support.ktx.android.content.longPreference
 import mozilla.components.support.ktx.android.content.stringPreference
+import mozilla.components.support.ktx.android.content.stringSetPreference
 import org.mozilla.fenix.BuildConfig
 import org.mozilla.fenix.Config
 import org.mozilla.fenix.FeatureFlags
@@ -61,7 +63,6 @@ private const val AUTOPLAY_USER_SETTING = "AUTOPLAY_USER_SETTING"
 class Settings(private val appContext: Context) : PreferencesHolder {
 
     companion object {
-        const val topSitesMaxCount = 16
         const val FENIX_PREFERENCES = "fenix_preferences"
 
         private const val BLOCKED_INT = 0
@@ -83,6 +84,14 @@ class Settings(private val appContext: Context) : PreferencesHolder {
          * Filtering is applied depending on the [historyImprovementFeatures] flag value.
          */
         const val SEARCH_GROUP_MINIMUM_SITES: Int = 2
+
+        // The maximum number of top sites to display.
+        const val TOP_SITES_MAX_COUNT = 16
+        /**
+         * Only fetch top sites from the [ContileTopSitesProvider] when the number of default and
+         * pinned sites are below this maximum threshold.
+         */
+        const val TOP_SITES_PROVIDER_MAX_THRESHOLD = 8
 
         private fun Action.toInt() = when (this) {
             Action.BLOCKED -> BLOCKED_INT
@@ -164,6 +173,11 @@ class Settings(private val appContext: Context) : PreferencesHolder {
 
     var adjustCreative by stringPreference(
         appContext.getPreferenceKey(R.string.pref_key_adjust_creative),
+        default = ""
+    )
+
+    var contileContextId by stringPreference(
+        appContext.getPreferenceKey(R.string.pref_key_contile_context_id),
         default = ""
     )
 
@@ -903,14 +917,6 @@ class Settings(private val appContext: Context) : PreferencesHolder {
         default = true
     )
 
-    /**
-     * Should we display a feedback request to the user when he turns off the Inactive Tabs feature
-     */
-    var shouldShowInactiveTabsTurnOffSurvey by booleanPreference(
-        appContext.getPreferenceKey(R.string.pref_key_should_show_inactive_tabs_turn_off_survey),
-        default = false
-    )
-
     fun getSitePermissionsPhoneFeatureAction(
         feature: PhoneFeature,
         default: Action = Action.ASK_TO_ALLOW
@@ -1122,7 +1128,7 @@ class Settings(private val appContext: Context) : PreferencesHolder {
 
     val topSitesMaxLimit by intPreference(
         appContext.getPreferenceKey(R.string.pref_key_top_sites_max_limit),
-        default = topSitesMaxCount
+        default = TOP_SITES_MAX_COUNT
     )
 
     var openTabsCount by intPreference(
@@ -1286,9 +1292,26 @@ class Settings(private val appContext: Context) : PreferencesHolder {
     /**
      * Indicates if the Contile functionality should be visible.
      */
-    var showContileFeature by featureFlagPreference(
+    var showContileFeature by lazyFeatureFlagPreference(
         key = appContext.getPreferenceKey(R.string.pref_key_enable_contile),
-        default = false,
+        default = { homescreenSections[HomeScreenSection.CONTILE_TOP_SITES] == true },
         featureFlag = FeatureFlags.contileFeature,
+    )
+
+    /**
+     * Indicates if the Task Continuity enhancements are enabled.
+     */
+    var enableTaskContinuityEnhancements by featureFlagPreference(
+        key = appContext.getPreferenceKey(R.string.pref_key_enable_task_continuity),
+        default = false,
+        featureFlag = FeatureFlags.taskContinuityFeature,
+    )
+
+    /**
+     * Blocklist used to filter items from the home screen that have previously been removed.
+     */
+    var homescreenBlocklist by stringSetPreference(
+        appContext.getPreferenceKey(R.string.pref_key_home_blocklist),
+        default = setOf()
     )
 }
