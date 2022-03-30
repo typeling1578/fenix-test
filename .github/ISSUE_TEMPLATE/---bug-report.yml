@@ -1,18 +1,8 @@
 name: "\U0001F41E Bug report"
 description: Create a report to help us improve.
 title: "[Bug]: "
-labels: ["\U0001F41E bug", "needs:triage"]
+labels: ["bug"]
 body:
-  - type: markdown
-    attributes:
-      value: |
-        - Please do your best to search for duplicate issues before filing a new issue so we can keep our issue board clean.
-        - Have a look at ["I want to file an issue!"][info] for more information.
-        - Read the [Community Participation Guidelines][guidelines] and the [Bugzilla Etiquette guidelines][bugzilla] before filing an issue.
-
-        [info]: https://github.com/mozilla-mobile/fenix#i-want-to-file-an-issue
-        [guidelines]: https://www.mozilla.org/en-US/about/governance/policies/participation/
-        [bugzilla]: https://bugzilla.mozilla.org/page.cgi?id=etiquette.html
   - type: textarea
     attributes:
       label: Steps to reproduce
@@ -54,19 +44,9 @@ body:
       placeholder: Android 10
     validations:
       required: true
-  - type: dropdown
-    attributes:
-      label: Firefox release type
-      description: You can find this information in Settings -> About Firefox.
-      options:
-        - Firefox Nightly
-        - Firefox Beta
-        - Firefox
-    validations:
-      required: true
   - type: input
     attributes:
-      label: Firefox version
+      label: App version
       description: You can find this information in Settings -> About Firefox.
       placeholder: 89.0.10
     validations:
@@ -75,9 +55,7 @@ body:
     attributes:
       label: Device logs
       description: |
-        Device logs or crash information can greatly aid in debugging. You can find some details here on how to [retrieve device logs or crash IDs][log].
-
-        [log]: https://github.com/mozilla-mobile/fenix/wiki/Logging-Crash-Information
+        Device logs or crash information can greatly aid in debugging. If you do not know, leave it blank.
     validations:
       required: false
   - type: textarea
