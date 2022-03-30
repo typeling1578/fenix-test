@@ -10,7 +10,6 @@ import android.content.Intent
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.net.toUri
-import com.google.android.play.core.review.ReviewManagerFactory
 import mozilla.components.feature.addons.AddonManager
 import mozilla.components.feature.addons.amo.AddonCollectionProvider
 import mozilla.components.feature.addons.migration.DefaultSupportedAddonsChecker
@@ -163,13 +162,6 @@ class Components(private val context: Context) {
     val strictMode by lazyMonitored { StrictModeManager(Config, this) }
 
     val settings by lazyMonitored { Settings(context) }
-
-    val reviewPromptController by lazyMonitored {
-        ReviewPromptController(
-            manager = ReviewManagerFactory.create(context),
-            reviewSettings = FenixReviewSettings(settings)
-        )
-    }
 
     val autofillConfiguration by lazyMonitored {
         AutofillConfiguration(

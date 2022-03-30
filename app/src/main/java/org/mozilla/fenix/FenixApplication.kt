@@ -302,13 +302,6 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
         }
 
         @OptIn(DelicateCoroutinesApi::class) // GlobalScope usage
-        fun queueReviewPrompt() {
-            GlobalScope.launch(Dispatchers.IO) {
-                components.reviewPromptController.trackApplicationLaunch()
-            }
-        }
-
-        @OptIn(DelicateCoroutinesApi::class) // GlobalScope usage
         fun queueRestoreLocale() {
             components.performance.visualCompletenessQueue.queue.runIfReadyOrQueue {
                 GlobalScope.launch(Dispatchers.IO) {
@@ -323,7 +316,6 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
         // startup path, before the UI finishes drawing (i.e. visual completeness).
         queueInitStorageAndServices()
         queueMetrics()
-        queueReviewPrompt()
         queueRestoreLocale()
     }
 
