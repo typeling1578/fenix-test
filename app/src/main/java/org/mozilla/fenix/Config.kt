@@ -8,11 +8,14 @@ enum class ReleaseChannel {
     Debug,
     Nightly,
     Beta,
-    Release;
+    Release,
+    ForkDebug,
+    ForkRelease;
 
     val isReleased: Boolean
         get() = when (this) {
             Debug -> false
+            ForkDebug -> false
             else -> true
         }
 
@@ -32,6 +35,7 @@ enum class ReleaseChannel {
     val isRelease: Boolean
         get() = when (this) {
             Release -> true
+            ForkRelease -> true
             else -> false
         }
 
@@ -39,7 +43,7 @@ enum class ReleaseChannel {
         get() = this == Beta
 
     val isNightlyOrDebug: Boolean
-        get() = this == Debug || this == Nightly
+        get() = this == Debug || this == Nightly || this == ForkDebug
 
     /**
      * Is this a build for a release channel that we used to ship Fennec on?
@@ -67,6 +71,8 @@ object Config {
         "nightly" -> ReleaseChannel.Nightly
         "beta" -> ReleaseChannel.Beta
         "release" -> ReleaseChannel.Release
+        "forkdebug" -> ReleaseChannel.ForkDebug
+        "forkrelease" -> ReleaseChannel.ForkRelease
         else -> {
             throw IllegalStateException("Unknown build type: ${BuildConfig.BUILD_TYPE}")
         }
